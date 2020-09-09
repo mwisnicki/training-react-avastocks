@@ -1,25 +1,50 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+  NavLink
+} from "react-router-dom";
+
+
+// TODO use react styles
+//import './App.css';
+import Details from './pages/Details';
+import Assets from './pages/Assets';
+import Home from './pages/Home';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <Router>
+      <header>
+        <nav>
+          <ul className="menu">
+            <li className="menu__list-item"><NavLink to="/home" activeClassName="active">Home</NavLink></li>
+            <li className="menu__list-item"><NavLink to="/assets" activeClassName="active">Assets</NavLink></li>
+            <li className="menu__list-item"><NavLink to="/details" activeClassName="active">Details</NavLink></li>
+          </ul>
+        </nav>
+
+        <Switch>
+          <Route path="/details/:symbol">
+            <Details />
+          </Route>
+          <Route path="/details">
+            <Redirect to="/details/ACME" />
+          </Route>
+          <Route path="/assets">
+            <Assets />
+          </Route>
+          <Route path="/home">
+            <Home />
+          </Route>
+          <Route paht="/">
+            <Redirect to="/home" />
+          </Route>
+        </Switch>
       </header>
-    </div>
+    </Router>
   );
 }
 
