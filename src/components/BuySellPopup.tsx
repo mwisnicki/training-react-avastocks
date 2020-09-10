@@ -1,4 +1,4 @@
-import React, { useState, ChangeEventHandler } from 'react';
+import React, { useState, ChangeEventHandler, useEffect } from 'react';
 import { PopupProps, Popup } from './Popup';
 import { Stock } from '../models/stock';
 
@@ -18,6 +18,11 @@ export const BuySellPopup: React.FC<PopupProps & {
     const [amount, setAmount] = useState(0);
 
     const disabled = !(stock && amount > 0);
+
+    useEffect(() => {
+        if (owned && amount > owned)
+            setAmount(owned)
+    }, [owned, amount])
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = e => {
         let newAmount = Math.max(0, e.target.valueAsNumber);

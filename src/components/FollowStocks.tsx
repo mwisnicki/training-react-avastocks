@@ -6,8 +6,11 @@ import { UserData, Allocation } from '../models/user';
 import { groupBy1 } from '../utils';
 import { StockSymbol } from '../models/stock';
 import { useStocks } from '../services/StocksService';
+import { Transaction } from '../models/transaction';
 
-function FollowStocks() {
+function FollowStocks(props: {
+    setTransactions: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
+}) {
     const [userData, setUserData] = useState<UserData>();
     const [allocations, setAllocations] = useState<Record<string, number>>({});
     const [watchList, setWatchList] = useState<Allocation[]>([])
@@ -66,7 +69,8 @@ function FollowStocks() {
                 {watchList.map(watched =>
                     <div className="stock-list__grid-row" key={watched.symbol}>
                         <StockDetails symbol={watched.symbol} amount={watched.amount}
-                            onUnfollow={unfollow} setAllocations={setAllocations} />
+                            onUnfollow={unfollow}
+                            setAllocations={setAllocations} setTransactions={props.setTransactions} />
                     </div>
                 )}
             </div>

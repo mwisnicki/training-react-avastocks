@@ -5,7 +5,7 @@ import { BuySellPopup } from './BuySellPopup';
 import { StockSymbol, Stock } from '../models/stock';
 import { usePopupState } from './Popup';
 import { useStock } from '../services/StocksService';
-import { TransactionSide, TransactionResponse } from '../models/transaction';
+import { TransactionSide, TransactionResponse, Transaction } from '../models/transaction';
 import { apiPost } from '../services/common';
 import { groupBy1 } from '../utils';
 
@@ -15,7 +15,8 @@ function StockDetails(props: {
     symbol: string,
     amount: number,
     onUnfollow: (symbol: StockSymbol) => void,
-    setAllocations: (records: Record<string, number>) => void
+    setAllocations: (records: Record<string, number>) => void,
+    setTransactions: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
 }) {
     const { symbol, amount } = props
     const showUnfollow = true;
@@ -35,7 +36,7 @@ function StockDetails(props: {
         const result = await apiPost<TransactionResponse>('/transactions', transaction);
         const allocationsBySymbol = groupBy1(result.allocations, a => a.symbol, a => a.amount);
         props.setAllocations(allocationsBySymbol)
-        // TODO propagate new transaction upwards
+        props.setTransactions(old => old.concat(result.transaction));
     }
 
     return (
