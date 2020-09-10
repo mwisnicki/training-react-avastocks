@@ -3,6 +3,9 @@ import React, { Dispatch, useReducer } from "react";
 import { Transaction } from "./models/transaction";
 import { Allocation, allocationsToLookup, UserData } from "./models/user";
 
+export const PERIODS = ['today', 'yearly'] as const;
+export type Period = typeof PERIODS[number];
+
 export default interface AppState {
   selectedSymbol?: StockSymbol;
   stocks?: Stock[];
@@ -10,10 +13,12 @@ export default interface AppState {
   userData?: UserData;
   allocationBySymbol?: Record<StockSymbol, number>,
   transactions?: Transaction[];
+  chartPeriod: Period;
 }
 
 export const initialState: AppState = {
   // TODO how to deal with lazy state?
+  chartPeriod: 'today'
 };
 
 export type Action =
@@ -25,6 +30,7 @@ export type Action =
   | { type: "removeWatchListEntry", symbol: StockSymbol }
   | { type: "addTransaction"; transaction: Transaction }
   | { type: "setTransactions"; transactions: Transaction[] }
+  | { type: "setChartPeriod"; period: Period }
   ;
 
 export function appStateReducer(state: AppState, action: Action): AppState {
@@ -92,6 +98,8 @@ export function appStateReducer(state: AppState, action: Action): AppState {
         ...state,
         transactions: action.transactions
       };
+    case "setChartPeriod":
+      return { ...state, chartPeriod: action.period };
     default:
       console.warn("unknown action:", action);
       return state;
