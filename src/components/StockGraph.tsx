@@ -25,7 +25,7 @@ function StockGraph(initProps: {
         showDetailsButton: true,
         ...initProps
     }
-    const { symbol } = props;
+    const { symbol, showDetailsButton } = props;
 
     const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
         title: undefined,
@@ -54,7 +54,6 @@ function StockGraph(initProps: {
     const [period, setPeriod] = useState<Period>('today');
 
     const detailsRoute = `/details/${symbol}`;
-    const showDetailsButton = true;
 
 
     useEffect(() => {

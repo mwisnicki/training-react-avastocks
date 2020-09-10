@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import StockDetails from './StockDetails';
 import FollowStockPopup from './FollowStockPopup';
 import api from '../services/api';
-import { UserData, Allocation } from '../models/user';
+import { UserData, Allocation, allocationsToLookup } from '../models/user';
 import { groupBy1 } from '../utils';
 import { StockSymbol } from '../models/stock';
 import { useStocks } from '../services/dataProviders';
@@ -24,12 +24,7 @@ function FollowStocks(props: {
 
     useEffect(() => {
         api.getUserData().then(ud => {
-            const allocations = groupBy1(
-                ud.allocations,
-                (a) => a.symbol,
-                (a) => a.amount
-            );
-            setAllocations(allocations);
+            setAllocations(allocationsToLookup(ud.allocations));
             setUserData(ud);
         })
     }, []);

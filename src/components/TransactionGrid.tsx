@@ -74,6 +74,8 @@ function TransactionGrid(props: {
         e.api.sizeColumnsToFit();
     }
 
+    // FIXME shows horizontal scroll on Assets and Details
+
     return (
         <section className="stock-transactions full-width">
             <div className="ag-theme-balham" style={{ height: '350px' }}>

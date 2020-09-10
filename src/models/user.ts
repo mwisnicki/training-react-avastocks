@@ -1,3 +1,5 @@
+import { groupBy1 } from "../utils";
+
 export interface UserData {
   userId: string;
   liquidity: number;
@@ -12,4 +14,12 @@ export interface Allocation {
 
 export interface WatchlistEntry {
   symbol: string;
+}
+
+export function allocationsToLookup(allocations: Allocation[]) {
+  return groupBy1(
+    allocations,
+    (a) => a.symbol,
+    (a) => a.amount
+  );
 }

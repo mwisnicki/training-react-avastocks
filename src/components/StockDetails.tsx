@@ -11,24 +11,28 @@ import api from '../services/api';
 
 // TODO is passing initial value in props a good design?
 
-function StockDetails(props: {
+function StockDetails(initProps: {
     symbol: string,
     amount: number,
-    onUnfollow: (symbol: StockSymbol) => void,
-    onSymbolClicked: (symbol: StockSymbol) => void,
-    setAllocations: (records: Record<string, number>) => void,
-    setTransactions: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
+    showUnfollow?: boolean,
+    onUnfollow?: (symbol: StockSymbol) => void,
+    onSymbolClicked?: (symbol: StockSymbol) => void,
+    setAllocations?: (records: Record<string, number>) => void,
+    setTransactions?: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
 }) {
-    const { symbol, amount } = props
-    const showUnfollow = true;
+    const props = {
+        showUnfollow: true,
+        ...initProps
+    }
+    const { symbol, amount, showUnfollow } = props;
 
     const stock = useStock(symbol);
 
     const buyPopupState = usePopupState();
     const sellPopupState = usePopupState();
 
-    const handleFollowClick = () => props.onUnfollow(symbol);
-    const handleSymbolClicked = () => props.onSymbolClicked(symbol);
+    const handleFollowClick = () => props.onUnfollow?.(symbol);
+    const handleSymbolClicked = () => props.onSymbolClicked?.(symbol);
 
     const handleBuy = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'BUY');
     const handleSell = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'SELL');
@@ -36,8 +40,8 @@ function StockDetails(props: {
     async function addTransaction(symbol: StockSymbol, amount: number, side: TransactionSide) {
         const result = await api.postTransaction({ symbol, amount, side });
         const allocationsBySymbol = groupBy1(result.allocations, a => a.symbol, a => a.amount);
-        props.setAllocations(allocationsBySymbol)
-        props.setTransactions(old => old.concat(result.transaction));
+        props.setAllocations?.(allocationsBySymbol)
+        props.setTransactions?.(old => old.concat(result.transaction));
     }
 
     return (
