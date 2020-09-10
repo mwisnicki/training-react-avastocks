@@ -5,12 +5,11 @@ import { GridReadyEvent, ColDef, ICellRendererParams } from 'ag-grid-community';
 
 import { BuySellPopup } from '../components/BuySellPopup';
 import { usePopupState } from '../components/Popup';
-import { apiGet, apiPost } from '../services/common';
 import { Allocation } from '../models/user';
 import { Stock } from '../models/stock';
 import { groupBy1 } from '../utils';
 import { usdFormatter } from '../services/formatters';
-import { TransactionRequest, TransactionResponse } from '../models/transaction';
+import api from '../services/api';
 
 interface AssetRowData extends Allocation {
     price: number;
@@ -56,8 +55,8 @@ function Assets() {
     const [ownedAmount, setOwnedAmount] = useState(0);
 
     useEffect(() => {
-        apiGet<Allocation[]>('/userdata/allocations').then(setAllocations);
-        apiGet<Stock[]>('/stocks').then(setStocks);
+        api.getAllocations().then(setAllocations);
+        api.getStocks().then(setStocks);
     }, []);
 
     useEffect(() => {
@@ -83,8 +82,7 @@ function Assets() {
     }
 
     async function handleSell(stock: Stock, amount: number) {
-        const transaction: TransactionRequest = { symbol: stock.symbol, amount, side: 'SELL' };
-        const result = await apiPost<TransactionResponse>('/transactions', transaction);
+        const result = await api.postTransaction({ symbol: stock.symbol, amount, side: 'SELL' });
         setAllocations(result.allocations);
     }
 

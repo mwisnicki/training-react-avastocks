@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import FollowStocks from '../components/FollowStocks';
 import StockGraph from '../components/StockGraph';
 import TransactionGrid from '../components/TransactionGrid';
-import { StocksProvider } from '../services/StocksService';
-import { apiGet } from '../services/common';
+import { StocksProvider } from '../services/dataProviders';
 import { Transaction } from '../models/transaction';
+import api from '../services/api';
 
 
 function Home() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
 
     useEffect(() => {
-        apiGet<Transaction[]>('/transactions').then(setTransactions);
+        api.getTransactions().then(setTransactions);
     }, [])
 
     return (

@@ -4,10 +4,10 @@ import { SimpleTicker } from './SimpleTicker';
 import { BuySellPopup } from './BuySellPopup';
 import { StockSymbol, Stock } from '../models/stock';
 import { usePopupState } from './Popup';
-import { useStock } from '../services/StocksService';
-import { TransactionSide, TransactionResponse, Transaction } from '../models/transaction';
-import { apiPost } from '../services/common';
+import { useStock } from '../services/dataProviders';
+import { TransactionSide, Transaction } from '../models/transaction';
 import { groupBy1 } from '../utils';
+import api from '../services/api';
 
 // TODO is passing initial value in props a good design?
 
@@ -32,8 +32,7 @@ function StockDetails(props: {
     const handleSell = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'SELL');
 
     async function addTransaction(symbol: StockSymbol, amount: number, side: TransactionSide) {
-        const transaction = { symbol, amount, side };
-        const result = await apiPost<TransactionResponse>('/transactions', transaction);
+        const result = await api.postTransaction({ symbol, amount, side });
         const allocationsBySymbol = groupBy1(result.allocations, a => a.symbol, a => a.amount);
         props.setAllocations(allocationsBySymbol)
         props.setTransactions(old => old.concat(result.transaction));

@@ -5,7 +5,7 @@ import React, {
   FunctionComponent,
   useContext,
 } from "react";
-import { apiGet } from "./common";
+import { apiGet } from "./api";
 
 // TODO what's the best way to provide singleton with async values?
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 import { Client } from '@hapi/nes/lib/client';
-import { WS_URL } from '../services/common';
-import { useStocks } from '../services/StocksService';
+import { WS_URL } from '../services/api';
+import { useStocks } from '../services/dataProviders';
 
 const nesClient = new Client(WS_URL);
 

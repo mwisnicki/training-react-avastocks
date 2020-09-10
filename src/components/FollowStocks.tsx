@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import StockDetails from './StockDetails';
 import FollowStockPopup from './FollowStockPopup';
-import { apiGet, apiPost } from '../services/common';
+import api from '../services/api';
 import { UserData, Allocation } from '../models/user';
 import { groupBy1 } from '../utils';
 import { StockSymbol } from '../models/stock';
-import { useStocks } from '../services/StocksService';
+import { useStocks } from '../services/dataProviders';
 import { Transaction } from '../models/transaction';
 
 function FollowStocks(props: {
@@ -22,7 +22,7 @@ function FollowStocks(props: {
     const hasMore = unfollowedStocks.length > 0;
 
     useEffect(() => {
-        apiGet<UserData>('/userdata').then(ud => {
+        api.getUserData().then(ud => {
             const allocations = groupBy1(
                 ud.allocations,
                 (a) => a.symbol,
@@ -48,12 +48,12 @@ function FollowStocks(props: {
 
     async function follow(symbol: StockSymbol) {
         if (watchList.find(w => w.symbol === symbol)) return;
-        await apiPost('/userdata/watchlist', { symbol, action: 'ADD' });
+        await api.postWatch({ symbol, action: 'ADD' });
         setWatchList(wl => [...wl, { symbol, amount: allocations[symbol] }]);
     }
 
     async function unfollow(symbol: StockSymbol) {
-        await apiPost('/userdata/watchlist', { symbol, action: 'REMOVE' });
+        await api.postWatch({ symbol, action: 'REMOVE' });
         setWatchList(wl => wl.filter(w => w.symbol !== symbol));
     }
 
