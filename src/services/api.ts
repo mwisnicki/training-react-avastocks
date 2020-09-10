@@ -6,10 +6,16 @@ import {
   TransactionResponse,
 } from "../models/transaction";
 
-export const API_BASE_URL = "https://demomocktradingserver.azurewebsites.net";
+function getenv(key: string): string {
+  const value = process.env[key];
+  if (typeof value !== "undefined") return value;
+  throw new Error(`Required environment variable not found: ${key}`);
+}
+
+export const API_BASE_URL: string = getenv("REACT_APP_API_BASE");
 export const WS_URL = API_BASE_URL.replace(/^https:/, "wss:");
 
-const userId = "marcin.wisnicki";
+const userId = getenv("REACT_APP_API_USER");
 const commonHeaders = {
   "Content-Type": "application/json",
   userid: userId,
