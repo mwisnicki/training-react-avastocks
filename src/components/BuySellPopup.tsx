@@ -65,7 +65,7 @@ export const BuySellPopup: React.FC<PopupProps & {
                 name="quantity"
                 placeholder="enter amount"
                 min="0"
-                max="owned"
+                max={ownedAmount}
                 value={amount}
                 onChange={handleChange}
             />
