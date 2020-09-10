@@ -9,7 +9,8 @@ import { useStocks } from '../services/dataProviders';
 import { Transaction } from '../models/transaction';
 
 function FollowStocks(props: {
-    setTransactions: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
+    setTransactions: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void,
+    onSymbolClicked: (symbol: StockSymbol) => void
 }) {
     const [userData, setUserData] = useState<UserData>();
     const [allocations, setAllocations] = useState<Record<string, number>>({});
@@ -69,7 +70,7 @@ function FollowStocks(props: {
                 {watchList.map(watched =>
                     <div className="stock-list__grid-row" key={watched.symbol}>
                         <StockDetails symbol={watched.symbol} amount={watched.amount}
-                            onUnfollow={unfollow}
+                            onUnfollow={unfollow} onSymbolClicked={props.onSymbolClicked}
                             setAllocations={setAllocations} setTransactions={props.setTransactions} />
                     </div>
                 )}

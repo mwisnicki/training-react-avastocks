@@ -15,6 +15,7 @@ function StockDetails(props: {
     symbol: string,
     amount: number,
     onUnfollow: (symbol: StockSymbol) => void,
+    onSymbolClicked: (symbol: StockSymbol) => void,
     setAllocations: (records: Record<string, number>) => void,
     setTransactions: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
 }) {
@@ -27,6 +28,7 @@ function StockDetails(props: {
     const sellPopupState = usePopupState();
 
     const handleFollowClick = () => props.onUnfollow(symbol);
+    const handleSymbolClicked = () => props.onSymbolClicked(symbol);
 
     const handleBuy = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'BUY');
     const handleSell = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'SELL');
@@ -43,7 +45,7 @@ function StockDetails(props: {
             {showUnfollow && <div className="stock-list__grid-cell">
                 <a onClick={handleFollowClick}><span className="stock-list__btn stock-list__btn--remove">&ndash;</span></a>
             </div>}
-            <div className="stock-list__grid-cell">{symbol}</div>
+            <div className="stock-list__grid-cell" onClick={handleSymbolClicked}>{symbol}</div>
             <div className="stock-list__grid-cell stock-list__grid-cell--txt-blue wide">
                 <SimpleTicker symbol={symbol} />
             </div>

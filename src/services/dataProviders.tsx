@@ -9,15 +9,24 @@ import { apiGet } from "./api";
 
 // TODO what's the best way to provide singleton with async values?
 
-function dataProvider<T>(path: string, defaultValue: T): [FunctionComponent<{}>, () => T, React.Context<T>] {
+interface DataProviderProps<T> {
+  onLoaded?: (data: T) => void
+}
+
+function dataProvider<T>(path: string, defaultValue: T): [
+  FunctionComponent<DataProviderProps<T>>, () => T, React.Context<T>
+] {
 
   const AContext = React.createContext<T>(defaultValue);
 
-  const ADataProvider: FunctionComponent<{}> = ({ children }) => {
+  const ADataProvider: FunctionComponent<DataProviderProps<T>> = ({ onLoaded, children }) => {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
       apiGet<T>(path).then(setValue);
     }, []);
+    useEffect(() => {
+      if (onLoaded) onLoaded(value);
+    }, [onLoaded, value])
     return (
       <AContext.Provider value={value}>{children}</AContext.Provider>
     );

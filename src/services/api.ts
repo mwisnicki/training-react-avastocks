@@ -1,5 +1,5 @@
 import { UserData, Allocation } from "../models/user";
-import { Stock, StockSymbol } from "../models/stock";
+import { Stock, StockSymbol, StockPriceHistory } from "../models/stock";
 import {
   Transaction,
   TransactionRequest,
@@ -46,6 +46,8 @@ export default {
   postWatch: (data: { symbol: StockSymbol; action: "ADD" | "REMOVE" }) =>
     apiPost("/userdata/watchlist", data),
   getStocks: () => apiGet<Stock[]>("/stocks"),
+  getPriceToday: (symbol: StockSymbol) => apiGet<StockPriceHistory>(`/stocks/${symbol}/price/today`),
+  getPriceYearly: (symbol: StockSymbol) => apiGet<StockPriceHistory>(`/stocks/${symbol}/price/yearly`),
   getTransactions: () => apiGet<Transaction[]>("/transactions"),
   postTransaction: (data: TransactionRequest) =>
     apiPost<TransactionResponse>("/transactions", data),
