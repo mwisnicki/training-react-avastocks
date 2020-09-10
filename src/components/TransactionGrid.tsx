@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -8,6 +8,7 @@ import { ColDef, GridReadyEvent, RowDataChangedEvent } from 'ag-grid-community';
 import { Transaction } from '../models/transaction';
 import { StockSymbol } from '../models/stock';
 import { dateFormatter, usdFormatter } from '../services/formatters';
+import { AppStateContext } from '../AppState';
 
 const directionToCssClass = (value: any) => {
     switch (value) {
@@ -22,9 +23,10 @@ interface TransactionRowData extends Transaction {
 }
 
 function TransactionGrid(props: {
-    transactions: Transaction[],
     filterSymbol?: StockSymbol
 }) {
+    const { state, dispatch } = useContext(AppStateContext);
+
     const columnDefs: ColDef[] = [
         {
             headerName: 'Date',
@@ -53,7 +55,7 @@ function TransactionGrid(props: {
         },
     ];
 
-    const [rowData, setRowData] = useState<TransactionRowData[]>([]);
+    const [rowData, setRowData] = useState<TransactionRowData[]>();
 
     useEffect(() => {
         function isTransactionVisible(tx: Transaction) {
@@ -62,8 +64,8 @@ function TransactionGrid(props: {
         }
 
         const toRow = (tx: Transaction) => ({ ...tx, dateObject: new Date(tx.date) });
-        setRowData(props.transactions.filter((tx) => isTransactionVisible(tx)).map(toRow));
-    }, [props.transactions, props.filterSymbol]);
+        setRowData(state.transactions?.filter((tx) => isTransactionVisible(tx))?.map(toRow));
+    }, [state.transactions, props.filterSymbol]);
 
 
     function handleGridReady(e: GridReadyEvent) {

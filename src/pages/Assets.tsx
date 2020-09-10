@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { GridReadyEvent, ColDef, ICellRendererParams } from 'ag-grid-community';
 
@@ -10,6 +10,7 @@ import { Stock } from '../models/stock';
 import { groupBy1 } from '../utils';
 import { usdFormatter } from '../services/formatters';
 import api from '../services/api';
+import { AppStateContext } from '../AppState';
 
 interface AssetRowData extends Allocation {
     price: number;
@@ -22,6 +23,9 @@ interface ICellRendererParamsTyped<T> extends ICellRendererParams {
 }
 
 function Assets() {
+    const { state, dispatch } = useContext(AppStateContext);
+    const { userData, stocks } = state;
+    const allocations = userData?.allocations;
 
     const columnDefs: ColDef[] = [
         { headerName: 'Stock', field: 'symbol' },
@@ -46,18 +50,14 @@ function Assets() {
 
     const [rowData, setRowData] = useState<AssetRowData[]>([]);
 
-    const [allocations, setAllocations] = useState<Allocation[]>();
-    const [stocks, setStocks] = useState<Stock[]>();
-
     // state for sell dialog
     const sellPopupState = usePopupState();
     const [stock, setStock] = useState<Stock>();
-    const [ownedAmount, setOwnedAmount] = useState(0);
 
     useEffect(() => {
-        api.getAllocations().then(setAllocations);
-        api.getStocks().then(setStocks);
-    }, []);
+        api.getAllocations().then(allocations => dispatch({ type: 'setAllocations', allocations }));
+        api.getStocks().then(stocks => dispatch({ type: 'setStocks', stocks }));
+    }, [dispatch]);
 
     useEffect(() => {
         if (allocations && stocks) {
@@ -81,11 +81,6 @@ function Assets() {
         e.api.sizeColumnsToFit();
     }
 
-    async function handleSell(stock: Stock, amount: number) {
-        const result = await api.postTransaction({ symbol: stock.symbol, amount, side: 'SELL' });
-        setAllocations(result.allocations);
-    }
-
     const frameworkComponents = {
         sellButtonRenderer: SellButtonRenderer
     }
@@ -95,7 +90,6 @@ function Assets() {
 
         const handlePopupShowClick = () => {
             setStock(data.stock);
-            setOwnedAmount(data.amount);
             sellPopupState.setVisible(true);
         }
 
@@ -128,8 +122,6 @@ function Assets() {
                 <BuySellPopup
                     stock={stock}
                     operation="sell"
-                    onPerform={handleSell}
-                    owned={ownedAmount}
                     {...sellPopupState}
                 />
             }

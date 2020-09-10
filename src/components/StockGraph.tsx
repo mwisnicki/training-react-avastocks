@@ -57,6 +57,7 @@ function StockGraph(initProps: {
 
 
     useEffect(() => {
+        console.log('StockGraph', {period, symbol});
         getPrices(period, symbol).then(history => {
             const series: SeriesOptionsType[] = [
                 {

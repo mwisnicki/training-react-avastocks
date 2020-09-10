@@ -1,47 +1,38 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from 'react';
+import React, { useContext } from 'react';
 import { SimpleTicker } from './SimpleTicker';
 import { BuySellPopup } from './BuySellPopup';
-import { StockSymbol, Stock } from '../models/stock';
+import { StockSymbol } from '../models/stock';
 import { usePopupState } from './Popup';
-import { useStock } from '../services/dataProviders';
-import { TransactionSide, Transaction } from '../models/transaction';
-import { groupBy1 } from '../utils';
 import api from '../services/api';
+import { AppStateContext } from '../AppState';
 
 // TODO is passing initial value in props a good design?
 
 function StockDetails(initProps: {
     symbol: string,
-    amount: number,
-    showUnfollow?: boolean,
-    onUnfollow?: (symbol: StockSymbol) => void,
-    onSymbolClicked?: (symbol: StockSymbol) => void,
-    setAllocations?: (records: Record<string, number>) => void,
-    setTransactions?: (fn: (oldTransactions: Transaction[]) => Transaction[]) => void
+    showUnfollow?: boolean
 }) {
+    const { state, dispatch } = useContext(AppStateContext);
+
     const props = {
         showUnfollow: true,
         ...initProps
     }
-    const { symbol, amount, showUnfollow } = props;
+    const { symbol, showUnfollow } = props;
 
-    const stock = useStock(symbol);
+    const amount = state.allocationBySymbol?.[symbol] || -1;
+    const stock = state.stocks?.find(s => s.symbol === symbol);
 
     const buyPopupState = usePopupState();
     const sellPopupState = usePopupState();
 
-    const handleFollowClick = () => props.onUnfollow?.(symbol);
-    const handleSymbolClicked = () => props.onSymbolClicked?.(symbol);
+    const handleFollowClick = () => unfollow(symbol);
+    const handleSymbolClicked = () => dispatch({ type: 'setSelectedSymbol', symbol });
 
-    const handleBuy = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'BUY');
-    const handleSell = (stock: Stock, amount: number) => addTransaction(stock.symbol, amount, 'SELL');
-
-    async function addTransaction(symbol: StockSymbol, amount: number, side: TransactionSide) {
-        const result = await api.postTransaction({ symbol, amount, side });
-        const allocationsBySymbol = groupBy1(result.allocations, a => a.symbol, a => a.amount);
-        props.setAllocations?.(allocationsBySymbol)
-        props.setTransactions?.(old => old.concat(result.transaction));
+    async function unfollow(symbol: StockSymbol) {
+        await api.postWatch({ symbol, action: 'REMOVE' });
+        dispatch({ type: 'removeWatchListEntry', symbol });
     }
 
     return (
@@ -65,8 +56,8 @@ function StockDetails(initProps: {
             </>}
 
             {stock && <>
-                <BuySellPopup stock={stock} operation="buy" onPerform={handleBuy} {...buyPopupState} />
-                <BuySellPopup stock={stock} operation="sell" owned={amount} onPerform={handleSell} {...sellPopupState} />
+                <BuySellPopup stock={stock} operation="buy" {...buyPopupState} />
+                <BuySellPopup stock={stock} operation="sell" {...sellPopupState} />
             </>}
         </>
     );

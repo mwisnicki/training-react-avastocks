@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 
 import { Client } from '@hapi/nes/lib/client';
 import { WS_URL } from '../services/api';
-import { useStocks } from '../services/dataProviders';
+import { AppStateContext } from '../AppState';
 
 const nesClient = new Client(WS_URL);
 
@@ -13,10 +13,11 @@ nesClient.connect().then(() => {
 
 
 export function SimpleTicker(props: { symbol: string; }) {
+    const { state, dispatch } = useContext(AppStateContext);
+
     const { symbol } = props;
 
-    const stocks = useStocks();
-    const stock = stocks.find(s => s.symbol === symbol);
+    const stock = state.stocks?.find(s => s.symbol === symbol);
 
     const [tick, setTick] = useState(stock?.lastTick);
 

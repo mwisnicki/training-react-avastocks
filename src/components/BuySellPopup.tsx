@@ -1,40 +1,57 @@
-import React, { useState, ChangeEventHandler, useEffect } from 'react';
+import React, { useState, ChangeEventHandler, useEffect, useContext } from 'react';
 import { PopupProps, Popup } from './Popup';
-import { Stock } from '../models/stock';
+import { Stock, StockSymbol } from '../models/stock';
+import { AppStateContext } from '../AppState';
+import { TransactionSide } from '../models/transaction';
+import api from '../services/api';
 
 export const BuySellPopup: React.FC<PopupProps & {
     operation: 'buy' | 'sell',
-    stock: Stock,
-    owned?: number,
-    onPerform: (stock: Stock, amount: number) => void
+    stock: Stock
 }> = (props) => {
-    const { stock, operation, owned, children, onPerform, ...popupProps } = props;
+    const { state, dispatch } = useContext(AppStateContext);
+    const { stock, operation, children, ...popupProps } = props;
 
     const label = {
         buy: 'Buy',
         sell: 'Sell'
     }[operation];
 
+    const sideByOperation: Record<typeof operation, TransactionSide> = {
+        buy: 'BUY',
+        sell: 'SELL'
+    };
+
+    const side = sideByOperation[operation];
+
+    const ownedAmount = state.allocationBySymbol?.[stock.symbol];
+
     const [amount, setAmount] = useState(0);
 
     const disabled = !(stock && amount > 0);
 
     useEffect(() => {
-        if (owned && amount > owned)
-            setAmount(owned)
-    }, [owned, amount])
+        if (ownedAmount && amount > ownedAmount)
+            setAmount(ownedAmount)
+    }, [ownedAmount, amount])
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = e => {
         let newAmount = Math.max(0, e.target.valueAsNumber);
-        if (operation === 'sell' && typeof owned !== 'undefined')
-            newAmount = Math.min(newAmount, owned);
+        if (operation === 'sell' && typeof ownedAmount !== 'undefined')
+            newAmount = Math.min(newAmount, ownedAmount);
         setAmount(newAmount);
     }
 
     const handleClick = () => {
-        onPerform(stock, amount);
+        addTransaction(stock.symbol, amount, side);
         popupProps.setVisible(false);
     };
+
+    async function addTransaction(symbol: StockSymbol, amount: number, side: TransactionSide) {
+        const result = await api.postTransaction({ symbol, amount, side });
+        dispatch({ type: 'setAllocations', allocations: result.allocations });
+        dispatch({ type: 'addTransaction', transaction: result.transaction });
+    }
 
     return (
         <Popup {...popupProps}>

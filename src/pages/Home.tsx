@@ -1,32 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext } from 'react';
 import FollowStocks from '../components/FollowStocks';
 import StockGraph from '../components/StockGraph';
 import TransactionGrid from '../components/TransactionGrid';
-import { StocksProvider } from '../services/dataProviders';
-import { Transaction } from '../models/transaction';
 import api from '../services/api';
-import { StockSymbol, Stock } from '../models/stock';
+import { AppStateContext } from '../AppState';
 
 
 function Home() {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [selectedSymbol, setSelectedSymbol] = useState<StockSymbol>();
+    const { state, dispatch } = useContext(AppStateContext);
+    const { selectedSymbol } = state;
 
     useEffect(() => {
-        api.getTransactions().then(setTransactions);
-    }, [])
-
-    const handleStocksLoaded = (stocks: Stock[]) => {
-        if (!selectedSymbol && stocks?.length > 0)
-            setSelectedSymbol(stocks[0].symbol)
-    }
+        api.getStocks().then(stocks => dispatch({ type: 'setStocks', stocks }));
+        api.getTransactions().then(transactions => dispatch({ type: 'setTransactions', transactions }));
+    }, [dispatch])
 
     return (
-        <StocksProvider onLoaded={handleStocksLoaded}>
-            <FollowStocks setTransactions={setTransactions} onSymbolClicked={setSelectedSymbol} />
+        <>
+            <FollowStocks />
             {selectedSymbol && <StockGraph symbol={selectedSymbol} />}
-            <TransactionGrid transactions={transactions} />
-        </StocksProvider>
+            <TransactionGrid />
+        </>
     );
 }
 

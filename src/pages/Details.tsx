@@ -1,40 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useParams } from "react-router-dom";
 import StockDetails from '../components/StockDetails';
 import StockGraph from '../components/StockGraph';
 import TransactionGrid from '../components/TransactionGrid';
-import { Transaction } from '../models/transaction';
 import api from '../services/api';
-import { allocationsToLookup } from '../models/user';
-import { StocksProvider } from '../services/dataProviders';
+import { AppStateContext } from '../AppState';
 
 function Details() {
+    const { state, dispatch } = useContext(AppStateContext);
     const { symbol: selectedSymbol } = useParams();
 
-    const [allocations, setAllocations] = useState<Record<string, number>>({});
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-
     useEffect(() => {
-        api.getAllocations().then(as => setAllocations(allocationsToLookup(as)))
-    }, []);
-
-    useEffect(() => {
-        api.getTransactions().then(setTransactions);
-    }, [])
-
-    const amount = allocations[selectedSymbol];
+        api.getStocks().then(stocks => dispatch({ type: 'setStocks', stocks }));
+        api.getAllocations().then(allocations => dispatch({ type: 'setAllocations', allocations }));
+        api.getTransactions().then(transactions => dispatch({ type: 'setTransactions', transactions }));
+    }, [dispatch]);
 
     return (
-        <StocksProvider>
+        <>
             <section className="stock-list">
                 <div style={{ display: 'table-row' }} >
-                    <StockDetails symbol={selectedSymbol} amount={amount} showUnfollow={false}
-                        setTransactions={setTransactions} setAllocations={setAllocations} />
+                    <StockDetails symbol={selectedSymbol} showUnfollow={false} />
                 </div>
             </section>
             <StockGraph symbol={selectedSymbol} showDetailsButton={false} />
-            <TransactionGrid transactions={transactions} filterSymbol={selectedSymbol} />
-        </StocksProvider>
+            <TransactionGrid filterSymbol={selectedSymbol} />
+        </>
     );
 }
 

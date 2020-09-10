@@ -1,16 +1,18 @@
-import React, { useState, ChangeEventHandler, useEffect } from 'react';
+import React, { useState, ChangeEventHandler, useEffect, useContext } from 'react';
 import { PopupProps, Popup } from './Popup';
-import { Allocation } from '../models/user';
 import { groupBy1 } from '../utils';
 import { StockSymbol, Stock } from '../models/stock';
+import { AppStateContext } from '../AppState';
+import api from '../services/api';
 
 const FollowStockPopup: React.FC<PopupProps & {
-    watchList: Allocation[],
-    unfollowedStocks: Stock[],
-    onFollow: (s: StockSymbol) => void
+    unfollowedStocks: Stock[]
 }> = (props) => {
+    const { state, dispatch } = useContext(AppStateContext);
+    const { watchList = [] } = state;
+
     const { unfollowedStocks } = props;
-    const watchListBySymbol = groupBy1(props.watchList, a => a.symbol);
+    const watchListBySymbol = groupBy1(watchList, a => a.symbol);
 
     const [symbol, setSymbol] = useState<StockSymbol | undefined>();
 
@@ -25,9 +27,15 @@ const FollowStockPopup: React.FC<PopupProps & {
 
     const handleChange: ChangeEventHandler<HTMLSelectElement> = event => setSymbol(event.target.value)
 
+    async function follow(symbol: StockSymbol) {
+        if (watchList.find(w => w.symbol === symbol)) return;
+        await api.postWatch({ symbol, action: 'ADD' });
+        dispatch({ type: 'addWatchListEntry', symbol });
+    }
+
     const onAddClick = () => {
         if (symbol)
-            props.onFollow(symbol);
+            follow(symbol);
         props.setVisible(false);
     }
 
